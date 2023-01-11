@@ -68,7 +68,7 @@ public class Drivetrain {
   private final AnalogGyroSim m_gyroSim = new AnalogGyroSim(m_gyro);
   private final EncoderSim m_leftEncoderSim = new EncoderSim(m_leftEncoder);
   private final EncoderSim m_rightEncoderSim = new EncoderSim(m_rightEncoder);
-  private final Field2d m_fieldSim = new Field2d();
+  private final Field2d m_fieldSim;
   private final LinearSystem<N2, N2, N2> m_drivetrainSystem =
       LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
   private final DifferentialDrivetrainSim m_drivetrainSimulator =
@@ -76,7 +76,7 @@ public class Drivetrain {
           m_drivetrainSystem, DCMotor.getCIM(2), 8, kTrackWidth, kWheelRadius, null);
 
   /** Subsystem constructor. */
-  public Drivetrain() {
+  public Drivetrain(Field2d fieldSim) {
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
@@ -92,6 +92,8 @@ public class Drivetrain {
     m_rightEncoder.reset();
 
     m_rightGroup.setInverted(true);
+
+    m_fieldSim = fieldSim;
     SmartDashboard.putData("Field", m_fieldSim);
   }
 
