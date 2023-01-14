@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.subsystems.arm.SimArm;
 import frc.robot.subsystems.drive.FalconTankDrivetrain;
 import frc.robot.subsystems.drive.SimDrivetrain;
 
@@ -36,6 +37,8 @@ public class Robot extends TimedRobot {
   private final Timer m_timer = new Timer();
   private Trajectory m_trajectory;
 
+  private final SimArm m_arm = new SimArm();
+
   @Override
   public void robotInit() {
     m_trajectory =
@@ -45,6 +48,8 @@ public class Robot extends TimedRobot {
             new Pose2d(6, 4, new Rotation2d()),
             new TrajectoryConfig(2, 2));
         m_fieldSim.getObject("traj").setTrajectory(m_trajectory);
+
+    m_arm.robotInit();
   }
 
   @Override
@@ -67,6 +72,10 @@ public class Robot extends TimedRobot {
     m_drive.drive(speeds.vxMetersPerSecond, speeds.omegaRadiansPerSecond);
   }
 
+  public void teleopInit() {
+    m_arm.teleopInit();
+  }
+
   @Override
   public void teleopPeriodic() {
     // Get the x speed. We are inverting this because Xbox controllers return
@@ -79,10 +88,18 @@ public class Robot extends TimedRobot {
     // the right by default.
     double rot = -m_rotLimiter.calculate(m_controller.getRightX()) * SimDrivetrain.kMaxAngularSpeed;
     m_drive.drive(xSpeed, rot);
+
+    m_arm.teleopPeriodic();
   }
 
   @Override
   public void simulationPeriodic() {
     m_drive.simulationPeriodic();
+    m_arm.simulationPeriodic();
+  }
+
+  @Override 
+  public void disabledInit() {
+    m_arm.disabledInit();
   }
 }

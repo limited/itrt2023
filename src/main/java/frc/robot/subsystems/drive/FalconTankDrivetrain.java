@@ -19,6 +19,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -36,6 +37,7 @@ public class FalconTankDrivetrain {
     // ------------
     // XXX_EF - Replace with NAV-X simulation
     private final AnalogGyro m_gyro = new AnalogGyro(0);
+    private final AnalogGyroSim m_gyroSim = new AnalogGyroSim(m_gyro);    
     private final DifferentialDriveOdometry m_odometry = new DifferentialDriveOdometry(
             m_gyro.getRotation2d(),
             0,
@@ -46,8 +48,8 @@ public class FalconTankDrivetrain {
     // Gains are for example purposes only - must be determined for your own
     // robot!
     private final SimpleMotorFeedforward m_feedforward = new SimpleMotorFeedforward(1, 3);
-    private final PIDController m_leftPIDController = new PIDController(8.5, 0, 0);
-    private final PIDController m_rightPIDController = new PIDController(8.5, 0, 0);
+    private final PIDController m_leftPIDController = new PIDController(1, 0, 0);
+    private final PIDController m_rightPIDController = new PIDController(1, 0, 0);
 
     DifferentialDriveKinematics m_kinematics = new DifferentialDriveKinematics(Drive.kTrackWidthMeters);
     DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(
@@ -72,6 +74,7 @@ public class FalconTankDrivetrain {
 
         m_fieldSim = fieldSim;
         SmartDashboard.putData("Field", m_fieldSim);
+        
     }
 
     public void periodic() {
@@ -87,6 +90,8 @@ public class FalconTankDrivetrain {
     }
 
     public void drive(double xSpeed, double rot) {
+        SmartDashboard.putNumber("xSpeed", xSpeed);
+        SmartDashboard.putNumber("rot", rot);
         setSpeeds(m_kinematics.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0, rot)));
     }
 
@@ -101,6 +106,11 @@ public class FalconTankDrivetrain {
 
         m_leftDrive.setVoltage(leftOutput + leftFeedforward);
         m_rightDrive.setVoltage(rightOutput + rightFeedforward);
+
+        SmartDashboard.putNumber("left speed", speeds.leftMetersPerSecond);
+        SmartDashboard.putNumber("right speed", speeds.rightMetersPerSecond);        
+        SmartDashboard.putNumber("left voltage", m_leftDrive.getMotorOutputVoltage());
+        SmartDashboard.putNumber("right voltage", m_rightDrive.getMotorOutputVoltage());
     }
 
     public void simulationPeriodic() {
@@ -124,6 +134,7 @@ public class FalconTankDrivetrain {
         m_rightDriveSim.setIntegratedSensorVelocity(
                 velocityToNativeUnits(
                         -m_driveSim.getRightVelocityMetersPerSecond()));
+        m_gyroSim.setAngle(-m_driveSim.getHeading().getDegrees());                        
     }
 
     public void resetOdometry(Pose2d pose) {
