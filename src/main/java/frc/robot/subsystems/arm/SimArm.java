@@ -62,6 +62,15 @@ private final Joystick m_joystick = new Joystick(Arm.kJoystickPort);
 
 private final MechanismLigament2d m_arm = m_armPivot.append(m_armLigament);
 
+private final MechanismLigament2d m_forearmLigament =m_armLigament.append( new MechanismLigament2d("forearm",
+10.0,
+0.0,
+3.0,
+new Color8Bit(Color.kRed)));
+
+
+
+
 
 public void robotInit() {
   m_encoder.setDistancePerPulse(Arm.kArmEncoderDistPerPulse);
@@ -118,12 +127,20 @@ public void simulationPeriodic() {
       var pidOutput =
           m_controller.calculate(m_encoder.getDistance(), Units.degreesToRadians(armPositionDeg));
       SmartDashboard.putData(m_controller);
+      
       SmartDashboard.putNumber("PID Output", pidOutput);
       m_motor.setVoltage(pidOutput);
     } else {
       // Otherwise, we disable the motor.
       m_motor.set(0.0);
     }
+
+    if (m_joystick.getRawButton(2)) {
+      m_forearmLigament.setLength(m_forearmLigament.getLength() + 1);
+    }
+    if (m_joystick.getRawButton(3)) {
+      m_forearmLigament.setLength(m_forearmLigament.getLength() - 1);
+    }    
   }  
 
 
